@@ -34,8 +34,9 @@ class FIFOCache(BaseCaching):
         if key in self.cache_data:
             self.cache_order.remove(key)
         elif len(self.cache_data) >= BaseCaching.MAX_ITEMS:
-            discarded_key = self.cache_order.pop(0)
+            discarded_key = self.cache_order[0]
             del self.cache_data[discarded_key]
+            self.cache_order = self.cache_order[1:]
             print("DISCARD: {}".format(discarded_key))
 
         self.cache_data[key] = item
