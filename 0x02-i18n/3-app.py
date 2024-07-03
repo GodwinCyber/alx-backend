@@ -11,9 +11,11 @@ class Config:
     BABEL_DEFAULT_LOCALE = "en"
     BABEL_DEFAULT_TIMEZONE = "UTC"
 
-app = Flask(__name__, template_folder = "templates")
+
+app = Flask(__name__, template_folder="templates")
 app.config.from_object(Config)
 babel = Babel(app)
+
 
 @babel.localeselector
 def get_locale():
@@ -25,6 +27,7 @@ def get_locale():
 def index():
     """Index route"""
     return render_template('3-index.html')
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
