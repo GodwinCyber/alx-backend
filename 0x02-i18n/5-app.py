@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Module Parametrize templates"""
 
-from typing import Union
+from typing import Union, Dict
 from flask import Flask, request, render_template, g, abort
-from flask_babel import Babel, _
+from flask_babel import Babel
 
 # mock user table
 users = {
