@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Module Infer appropriate time zone"""
+"""Module  Display the current time"""
 
 from typing import Union, Dict
 from flask import Flask, request, render_template, g
-from flask_babel import Babel
+from flask_babel import Babel, format_datetime
 import pytz
+from pytz.exceptions import UnknownTimeZoneError
+from datetime import datetime
 
 
 # mock user table
@@ -31,21 +33,18 @@ babel = Babel(app)
 @babel.localeselector
 def get_locale():
     """Determine the best match with our supported languages"""
-    # getting the locale URL
     locale = request.args.get('locale', '')
     if locale and locale in app.config['LANGUAGES']:
         return locale
 
-    # getting the locale user setting
     user = getattr(g, 'user', None)
     if user and user['locale'] in app.config['LANGUAGES']:
         return user['locale']
 
-    # getting the locale header
     locale = request.headers.get('locale', '')
     if locale and locale in app.config["LANGUAGES"]:
         return locale
-    # Locale default
+
     return request.accept_languages.best_match(app.config["LANGUAGES"])
 
 
@@ -60,8 +59,7 @@ def get_user() -> Union[dict, None]:
             return users.get(user_id)
         except ValueError:
             return None
-    else:
-        return None
+    return None
 
 
 @app.before_request
@@ -77,17 +75,16 @@ def before_request():
 
 @babel.timezoneselector
 def get_timezone():
-    """get_timezone function and use the babel.timezoneselector
-        decorator. The logic should be the same as get_locale:
-        Find timezone parameter in URL parameters
-        Find time zone from user settings
-        Default to UTC
-        Before returning a URL-provided or user time zone, you must
-        validate that it is a valid time zone. To that, use
-        pytz.timezone and catch the
-        pytz.exceptions.UnknownTimeZoneError exception.
+    """Get timezone function and use the babel.timezoneselector
+       decorator. The logic should be the same as get_locale:
+       Find timezone parameter in URL parameters
+       Find time zone from user settings
+       Default to UTC
+       Before returning a URL-provided or user time zone, you must
+       validate that it is a valid time zone. To that, use
+       pytz.timezone and catch the
+       pytz.exceptions.UnknownTimeZoneError exception.
     """
-    # Timezone from URL parameters
     timezone = request.args.get('timezone')
     if timezone:
         try:
@@ -95,21 +92,23 @@ def get_timezone():
             return timezone
         except UnknownTimeZoneError:
             pass
-    # Timezone from user settings
+
     if g.user and g.user['timezone']:
         try:
             pytz.timezone(g.user['timezone'])
             return g.user['timezone']
         except UnknownTimeZoneError:
             pass
-    # Default to UTC
+
     return app.config['BABEL_DEFAULT_TIMEZONE']
 
 
 @app.route('/', methods=['GET'], strict_slashes=False)
 def index():
     """Index route"""
-    return render_template('6-index.html')
+    current_time = datetime.now(pytz.timezone(get_timezone()))
+    formatted_time = format_datetime(current_time)
+    return render_template('index.html', current_time=formatted_time)
 
 
 if __name__ == "__main__":
